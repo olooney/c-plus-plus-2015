@@ -7,11 +7,11 @@ void greet(const T& entity) {
 }
 
 template<typename T>
-T add(const T& lhs, const T& rhs) {
+auto add(const T& lhs, const T& rhs) {
 	return lhs + rhs;
 }
 
 template<typename T, typename T2>
-T add(const T& lhs, const T2& rhs) {
+auto add(const T& lhs, const T2& rhs) {
 	return lhs + rhs;
 }
