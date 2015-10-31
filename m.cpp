@@ -1,6 +1,10 @@
-#include "g.h"
+#include "greet.h"
 #include<cstring>
 #include<string>
+
+#include <typeinfo>
+#include "demangle.h"
+
 
 int main(int argc, char** argv) {
 	// const literal
@@ -19,5 +23,9 @@ int main(int argc, char** argv) {
 	greet(add(std::string("LEFT"), object));
 	greet(add(std::string("LEFT"), thing));
 
+	// auto
+	auto stringy = add(std::string("LEFT"), object);
+	std::cout << real_type_name(stringy) << std::endl;
 	return 0;
 }
+
