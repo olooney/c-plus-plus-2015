@@ -1,11 +1,11 @@
-#include "greet.h"
 #include<cstring>
 #include<string>
 #include<vector>
 #include<utility>
 
-#include <typeinfo>
 #include "demangle.h"
+#include "greet.h"
+#include "sortie.h"
 
 template<typename container_t, typename index_t>
 auto value_at(const container_t container, index_t index)
@@ -48,6 +48,7 @@ int main(int argc, char** argv) {
 	std::cout << a1 << std::endl;
 	std::cout << real_type_name(a1) << std::endl;
 
+    mmm();
 
 	return 0;
 }
