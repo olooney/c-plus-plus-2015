@@ -6,6 +6,7 @@
 #include "demangle.h"
 #include "greet.h"
 #include "sortie.h"
+#include "rvalue.h"
 
 template<typename container_t, typename index_t>
 auto value_at(const container_t container, index_t index)
@@ -49,6 +50,8 @@ int main(int argc, char** argv) {
 	std::cout << real_type_name(a1) << std::endl;
 
     mmm();
+
+    rvalue();
 
 	return 0;
 }
