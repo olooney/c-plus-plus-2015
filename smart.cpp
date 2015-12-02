@@ -2,17 +2,19 @@
 #include <vector>
 #include <memory>
 
+template<typename ValueT>
 class Node {
 public:
-    explicit Node(const std::string & new_value): 
+    explicit Node(const ValueT & new_value): 
         value(new_value)
     {}
     std::unique_ptr<Node> next;
-    std::string value;
+    ValueT value;
 
-    Node* add(std::string new_value) {
+    Node* add(const ValueT& new_value) {
         auto tail = this;
         while ( tail->next ) tail = tail->next.get();
+        // TODO only works with std::unique_ptr right now!
         tail->next = std::make_unique<Node>(new_value);
         return tail->next.get();
     }
@@ -22,7 +24,8 @@ public:
     }
 };
 
-std::ostream& operator<< (std::ostream& out, const Node& node) {
+template<typename ValueT>
+std::ostream& operator<< (std::ostream& out, const Node<ValueT>& node) {
     out << node.value;
     if ( node.next ) {
         out << ", ";
@@ -34,16 +37,24 @@ std::ostream& operator<< (std::ostream& out, const Node& node) {
 }
 
 int main(int argc, char** argv) {
-    
-    Node n1("one");
-    n1.add("two");
-    auto midpoint = n1.add("three");
-    n1.add("four");
-    n1.add("five");
 
-    std::cout << n1 << std::endl;
-    midpoint->next = nullptr;
-    std::cout << n1 << std::endl;
+    {
+        // create a linked list
+        // every head owns the entire downstream chain
+        Node<std::string> n1("one");
+        n1.add("two");
+        auto midpoint = n1.add("three");
+        n1.add("four");
+        n1.add("five");
+
+        std::cout << n1 << std::endl;
+        midpoint->next = nullptr;
+        std::cout << n1 << std::endl;
+    }
+
+    Node<int> m1(42);
+    m1.add(13);
+    std::cout << m1 << std::endl;
 
     return 0;
 }

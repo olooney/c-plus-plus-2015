@@ -1,5 +1,15 @@
+test: test_kv test_smart
+	
 
-test: msmart mtype
+test_kv: kv
+	./kv set answer 42
+	./kv get answer
+	./kv del answer
+
+kv: kv.cpp
+	g++-4.9 -std=c++1y -o kv kv.cpp
+
+test_smart: msmart mtype
 	./msmart
 
 msmart: smart.cpp
