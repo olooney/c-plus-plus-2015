@@ -1,4 +1,4 @@
-test: test_kv test_smart
+test: test_kv 
 	
 
 test_kv: kv
