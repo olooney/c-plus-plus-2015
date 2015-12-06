@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <math.h>
+#include "compress.h"
 
 int main(int argc, char **argv) {
     if ( argc != 2 ) {
@@ -20,6 +21,17 @@ int main(int argc, char **argv) {
             ": " << lodepng_error_text(error) << std::endl;
         return 1;
     } 
+
+    Huffman<unsigned char> huff;
+    for ( auto pc = image.begin(); pc != image.end(); pc++ ) {
+        huff.add_symbol(*pc);
+    }
+    huff.build_tree();
+    huff.dump_tree();
+
+    std::cout << "bits(255) = " << huff.symbol_to_bits( (unsigned char)255) << std::endl;
+    std::cout << "symbol(001100) = " << std::hex << (int)huff.bits_to_symbol("001100") << std::dec << std::endl;
+    return 0;
 
     // print the image as greyscale ascii art
     static const std::string symbols = " .-+*#";
