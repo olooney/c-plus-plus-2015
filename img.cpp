@@ -31,6 +31,46 @@ int main(int argc, char **argv) {
 
     std::cout << "bits(255) = " << huff.symbol_to_bits( (unsigned char)255) << std::endl;
     std::cout << "symbol(001100) = " << std::hex << (int)huff.bits_to_symbol("001100") << std::dec << std::endl;
+
+    std::ofstream out("img.huff");
+    BitWriter bit_writer(out);
+    for ( auto pc = image.begin(); pc != image.end(); pc++ ) {
+        auto bits = huff.symbol_to_bits(*pc);
+        //std::cout << bits;
+        for ( auto pb = bits.begin(); pb != bits.end(); pb++ ) {
+            if ( *pb == '0' ) {
+                bit_writer.write_bit(0);
+            } else {
+                bit_writer.write_bit(1);
+            }
+        }
+    }
+    bit_writer.flush();
+    out.close();
+
+    std::cout << "\n\n\n";
+
+    std::ifstream in("img.huff");
+    BitReader bit_reader(in);
+    Huffman<unsigned char>::Node* state = nullptr;
+    unsigned char symbol;
+    int y = 0;
+    while ( bit_reader ) {
+        int bit = bit_reader.read_bit();
+        //std::cout << bit;
+        bool symbol_complete = huff.read_huff_bit(bit, state, symbol);
+        if ( symbol_complete ) {
+            std::cout << std::hex << (int)symbol << std::dec << " ";
+            y++;
+            if ( y >= height ) {
+                y=0;
+                std::cout << std::endl;
+            }
+        }
+    }
+
+    in.close();
+
     return 0;
 
     // print the image as greyscale ascii art

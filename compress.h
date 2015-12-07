@@ -3,6 +3,72 @@
 #include <memory>
 #include <map>
 
+class BitReader {
+    std::istream& in;
+    unsigned char c;
+    int shift;
+public:
+    BitReader(std::istream& input): 
+        in(input),
+        c('\0'),
+        shift(7)
+    {}
+
+    ~BitReader() = default;
+
+    operator bool() const {
+        return (shift < 7) || bool(in);
+    }
+
+    int read_bit() {
+        ++shift;
+        if ( shift > 7 ) {
+            c = in.get();
+            shift = 0;
+        }
+        
+        unsigned char mask = (unsigned char)1 << shift;
+        return (c & mask) >> shift;
+    }
+};
+
+// little endian?
+class BitWriter {
+    std::ostream& out;
+    unsigned char c;
+    int shift;
+public:
+    BitWriter(std::ostream& output):
+        out(output),
+        c('\0'),
+        shift(0)
+    {}
+
+    ~BitWriter() = default;
+    
+    void write_bit(int bit) {
+        if ( !(bit == 0 || bit == 1 ) ) {
+            throw std::exception(); // todo
+        }
+
+        c |= (bit << shift);
+
+        if ( shift == 7 ) {
+            shift = 0;
+            out.put(c);
+            c = 0;
+        } else {
+            ++shift;
+        }
+    }
+
+    void flush() {
+        out.put(c);
+        c = 0;
+        shift = 0;
+    }
+};
+
 template<typename Symbol>
 class Huffman {
     using SymbolToFrequency = std::map<Symbol, unsigned long>;
@@ -83,7 +149,7 @@ public:
             pq(compare);
 
         for ( auto ppair = frequency_table.begin(); ppair != frequency_table.end(); ppair++ ) {
-            pq.emplace(Node(ppair->first, ppair->second));
+            pq.emplace(ppair->first, ppair->second);
         }
 
         /* 
@@ -99,7 +165,7 @@ public:
             pq.pop();
             OwnedNode one = std::make_shared<Node>(pq.top());
             pq.pop();
-            pq.emplace( Node(zero->frequency + one->frequency, zero, one) );
+            pq.emplace(zero->frequency + one->frequency, zero, one);
         }
 
         root = std::make_shared<Node>(pq.top());
@@ -138,4 +204,31 @@ public:
         return node->symbol;
     }
 
+    bool read_huff_bit(int bit, Node*& state, Symbol& symbol) {
+        if ( state == nullptr ) {
+            state = root.get();
+        }
+
+        if ( state->is_leaf() ) {
+            throw std::exception();
+        }
+
+        if ( bit == 1 ) {
+            state = state->one_node.get();
+        } else {
+            state = state->zero_node.get();
+        }
+
+        if ( state->is_leaf() ) {
+            symbol = state->symbol;
+            state = root.get();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 };
+
+
+

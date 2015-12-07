@@ -3,7 +3,7 @@ test: test_img
 test_img: img
 	./img test.png
 
-img: img.cpp
+img: img.cpp compress.h
 	g++-4.9 -std=c++1y -o img img.cpp lib/lodepng.cpp
 	
 
