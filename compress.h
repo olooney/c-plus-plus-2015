@@ -56,6 +56,7 @@ public:
         if ( shift == 7 ) {
             shift = 0;
             out.put(c);
+            //std::cerr << "BitWriter wrote: " << std::hex << (int)c << std::dec << std::endl;
             c = 0;
         } else {
             ++shift;
@@ -109,8 +110,8 @@ public:
         void dump(std::ostream& out, int level) const {
             std::string indent(4*level, ' ');
             if ( is_leaf() ) {
-                out << indent << std::hex <<  (int)symbol << " -> " << bits
-                    << std::dec << " (" << frequency << ")\n";
+                out << indent << symbol << " -> " << bits
+                    << " (" << frequency << ")\n";
             } else {
                 out << indent << "? -> " << bits << "... (" << frequency << ")\n";
                 zero_node->dump(out, level+1);
@@ -173,8 +174,8 @@ public:
         
     }
 
-    void dump_tree() {
-        root->dump(std::cout, 0);
+    void dump_tree(std::ostream& out) {
+        root->dump(out, 0);
     }
 
     std::string symbol_to_bits(const Symbol& symbol) {
