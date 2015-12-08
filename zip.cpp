@@ -22,6 +22,8 @@ int main(int argc, char **argv) {
     huff.build_tree();
     // huff.dump_tree(std::cerr);
 
+    huff.write_tree(std::cout);
+
     // write out the encoded file
     BitWriter bit_writer(std::cout);
     for ( auto pc = input.begin(); pc != input.end(); pc++ ) {

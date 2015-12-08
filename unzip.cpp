@@ -7,18 +7,11 @@
 
 int main(int argc, char **argv) {
     
-    // TODO store the huffman tree in the file itself!!!
-    // currently, we cheat by rebuilding the tree from the source file.
-    std::ifstream fin("noise.txt");
+    // Read the huffman tree at the beginning of the file
     Huffman<char> huff;
-    using InIt = std::istreambuf_iterator<char>;
-    for ( auto pc = InIt(fin); pc != InIt(); pc++ ) {
-        huff.add_symbol(*pc);
-    }
-    huff.add_symbol('\0');
-    huff.build_tree();
-    //huff.dump_tree(std::cerr);
-    
+    huff.read_tree(std::cin);
+    // huff.dump_tree(std::cerr);
+
     // read the encoded file bit by bit. With every new bit,
     // move one level down the huffman tree. When we reach a leaf,
     // emit the symbol and start over. The process expects to

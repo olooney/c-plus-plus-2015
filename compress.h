@@ -3,6 +3,17 @@
 #include <memory>
 #include <map>
 
+
+class MalformedSymbolTable : std::exception {
+    const char* what() const throw()
+    { return "MalformedSymbolTable: expected '=' or '('.\n"; }
+};
+
+class UnterminatedSymbolTable : std::exception {
+    const char* what() const throw()
+    { return "UnterminatedSymbolTable: expected ';'.\n"; }
+};
+
 class BitReader {
     std::istream& in;
     unsigned char c;
@@ -128,6 +139,17 @@ public:
                 one_node->parentify(this, bits + "1", bits_table);
             }
         }
+
+        void write(std::ostream& out) const {
+            if ( is_leaf() ) {
+                out.put('=');
+                out << symbol;
+            } else {
+                out.put('(');
+                zero_node->write(out);
+                one_node->write(out);
+            }
+        }
     };
 
     void add_symbol(const Symbol& symbol, unsigned long n) {
@@ -229,6 +251,34 @@ public:
         }
     }
 
+    void write_tree(std::ostream& out) const {
+        root->write(out);
+        out.put(';');
+    }
+        
+    void read_tree(std::istream& in) {
+        root = nullptr;
+        read_node(in, root);
+        char terminator = in.get();
+        if ( terminator != ';' ) {
+            throw UnterminatedSymbolTable();
+        }
+    }
+
+    void read_node(std::istream& in, std::shared_ptr<Node>& node) {
+        char c = in.get();
+        if ( c == '=' ) {
+            Symbol symbol = in.get(); // todo
+            node = std::make_shared<Node>(symbol, 42);
+        } else if ( c == '(' ) {
+            std::shared_ptr<Node> zero_node, one_node;
+            read_node(in, zero_node);
+            read_node(in, one_node);
+            node = std::make_shared<Node>(216, zero_node, one_node);
+        } else {
+            throw MalformedSymbolTable();
+        }
+    }
 };
 
 
