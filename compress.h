@@ -14,6 +14,8 @@ class UnterminatedSymbolTable : std::exception {
     { return "UnterminatedSymbolTable: expected ';'.\n"; }
 };
 
+// wraps a input stream and reads bits one at a time.
+// maintains a one byte buffer.
 class BitReader {
     std::istream& in;
     unsigned char c;
@@ -43,7 +45,10 @@ public:
     }
 };
 
-// little endian?
+// writes bits one at a time. 
+// bits accumulate in a one-byte buffer and are written every 8 bits.
+// this can leave up to 7 bits unwritten, so be sure to call flush()
+// at the end to write out all remaining bits padded with zeros.
 class BitWriter {
     std::ostream& out;
     unsigned char c;
@@ -81,6 +86,10 @@ public:
     }
 };
 
+// Huffman tree. Places an arbitrary number of symbols into
+// a unbalanced binary tree such that the most common symbols are as
+// close to the root as possible. 
+// Also provides serialization/deserialization.
 template<typename Symbol>
 class Huffman {
     using SymbolToFrequency = std::map<Symbol, unsigned long>;
@@ -227,6 +236,18 @@ public:
         return node->symbol;
     }
 
+    // used to decode an incoming Huffman-encoded bit stream.
+    // conceptually, a Huffman tree is read by maintaining a pointer
+    // to a node in the tree, and for every bit read descending into
+    // either the left or right node depending on if the bit is 0 or 1.
+    // when a leaf node is reached, a symbol is emitted, and we start over
+    // from the top of the tree.
+    // This function implements this algorithm by using a mutable Node pointer
+    // called state that shows where in the tree we are. You pass it a single
+    // bit as an integer 0 or 1, and it advances the state pointer. If it reaches
+    // a leaf node, then it returns true and sets symbol as a side effect. This
+    // also resets the state pointer to the root of the tree. If a leaf node
+    // is not reached, then returns false and symbol is not assigned to.
     bool read_huff_bit(int bit, Node*& state, Symbol& symbol) {
         if ( state == nullptr ) {
             state = root.get();

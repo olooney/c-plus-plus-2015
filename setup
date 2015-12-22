@@ -2,8 +2,16 @@
 # prepares a clean environment for c++14 development g++4.9 is latest as of
 # October 2015, not the default in any standard distros yet.
 
+# libraries
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test
 sudo apt-get update
 sudo apt-get install git g++-4.9 make
+
+# git
 git config --global user.name "Oran Looney"
 git config --global user.email olooney@gmail.com
-#git clone https://github.com/olooney/c-plus-plus-2015.git
+
+# project
+git clone https://github.com/olooney/c-plus-plus-2015.git
+cd 'c-plus-plus-2015'
+make test_all

@@ -16,8 +16,8 @@ int main(int argc, char **argv) {
     
     // calculate the Huffman encoding tree
     Huffman<char> huff;
-    for ( auto pc = input.begin(); pc != input.end(); pc++ ) {
-        huff.add_symbol(*pc);
+    for ( auto& c : input ) {
+        huff.add_symbol(c);
     }
     huff.build_tree();
     // huff.dump_tree(std::cerr);
@@ -26,11 +26,11 @@ int main(int argc, char **argv) {
 
     // write out the encoded file
     BitWriter bit_writer(std::cout);
-    for ( auto pc = input.begin(); pc != input.end(); pc++ ) {
-        auto bits = huff.symbol_to_bits(*pc);
-        // std::cerr << "symbol \"" << *pc << "\" -> " << bits << std::endl;
-        for ( auto pb = bits.begin(); pb != bits.end(); pb++ ) {
-            if ( *pb == '0' ) {
+    for ( auto& c : input ) {
+        auto bits = huff.symbol_to_bits(c);
+        // std::cerr << "symbol \"" << c << "\" -> " << bits << std::endl;
+        for ( auto& b : bits ) {
+            if ( b == '0' ) {
                 bit_writer.write_bit(0);
             } else {
                 bit_writer.write_bit(1);

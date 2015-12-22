@@ -23,22 +23,22 @@ int main(int argc, char **argv) {
     } 
 
     Huffman<unsigned char> huff;
-    for ( auto pc = image.begin(); pc != image.end(); pc++ ) {
-        huff.add_symbol(*pc);
+    for ( auto& c : image ) {
+        huff.add_symbol(c);
     }
     huff.build_tree();
-    huff.dump_tree();
+    // huff.dump_tree();
 
     std::cout << "bits(255) = " << huff.symbol_to_bits( (unsigned char)255) << std::endl;
     std::cout << "symbol(001100) = " << std::hex << (int)huff.bits_to_symbol("001100") << std::dec << std::endl;
 
     std::ofstream out("img.huff");
     BitWriter bit_writer(out);
-    for ( auto pc = image.begin(); pc != image.end(); pc++ ) {
-        auto bits = huff.symbol_to_bits(*pc);
+    for ( auto& c : image ) {
+        auto bits = huff.symbol_to_bits(c);
         //std::cout << bits;
-        for ( auto pb = bits.begin(); pb != bits.end(); pb++ ) {
-            if ( *pb == '0' ) {
+        for ( auto& b : bits ) {
+            if ( b == '0' ) {
                 bit_writer.write_bit(0);
             } else {
                 bit_writer.write_bit(1);
@@ -60,18 +60,16 @@ int main(int argc, char **argv) {
         //std::cout << bit;
         bool symbol_complete = huff.read_huff_bit(bit, state, symbol);
         if ( symbol_complete ) {
-            std::cout << std::hex << (int)symbol << std::dec << " ";
+            // std::cerr << std::hex << (int)symbol << std::dec << " ";
             y++;
             if ( y >= height ) {
                 y=0;
-                std::cout << std::endl;
+                // std::cerr << std::endl;
             }
         }
     }
 
     in.close();
-
-    return 0;
 
     // print the image as greyscale ascii art
     static const std::string symbols = " .-+*#";

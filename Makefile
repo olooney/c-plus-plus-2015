@@ -1,7 +1,7 @@
-CC=g++
-#CC=g++-4.9
+#CC=g++ -std=c++1y 
+CC=g++-4.9 -std=c++14 
 
-FLAGS=-std=c++1y -fmax-errors=3
+FLAGS=-fmax-errors=3
 
 test: test_zip
 
@@ -40,3 +40,5 @@ msmart: smart.cpp
 
 mtype: greet.h m.cpp demangle.h sortie.h rvalue.h
 	$(CC) $(FLAGS) -o mtype m.cpp
+
+test_all: test_smart test_kv test_img test_zip
