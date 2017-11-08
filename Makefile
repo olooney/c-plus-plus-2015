@@ -52,3 +52,7 @@ test_server: server
 
 server: server.cpp
 	$(CC) $(FLAGS) -lboost_system -lboost_thread-mt -o $@ $<
+
+clean:
+	rm img kv msmart mtype noise.txt noise.zip noise2.txt
+
