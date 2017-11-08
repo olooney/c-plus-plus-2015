@@ -1,5 +1,5 @@
 #CC=g++ -std=c++1y 
-CC=g++-4.9 -std=c++14 
+CC=g++ -std=c++14 
 
 FLAGS=-fmax-errors=3
 
@@ -42,3 +42,10 @@ mtype: greet.h m.cpp demangle.h sortie.h rvalue.h
 	$(CC) $(FLAGS) -o mtype m.cpp
 
 test_all: test_smart test_kv test_img test_zip
+# test_server is not included, since it blocks
+
+test_server: server
+	./server 8181
+
+server: server.cpp
+	$(CC) $(FLAGS) -lboost_system -lboost_thread-mt -o $@ $<
