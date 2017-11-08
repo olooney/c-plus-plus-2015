@@ -3,7 +3,7 @@ CC=g++ -std=c++17
 # and not be an alias for clang as on Mac OS X>
 
 #FLAGS=-Wall -Wno-c++11-extensions
-FLAGS=-fmax-errors=3 -Wall
+FLAGS=-fmax-errors=3 -Wall -DBOOST_SYSTEM_NO_DEPRECATED -DBOOST_ERROR_CODE_HEADER_ONLY
 FORTUNE=/usr/games/fortune
 
 test: test_all
@@ -51,7 +51,7 @@ test_server: server
 	./server 8181
 
 server: server.cpp
-	$(CC) $(FLAGS) -lboost_system -lboost_thread-mt -o $@ $<
+	$(CC) $(FLAGS) -lboost_system -lboost_thread -o $@ $<
 
 clean:
 	rm img kv msmart mtype noise.txt noise.zip noise2.txt
