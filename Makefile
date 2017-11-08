@@ -1,12 +1,12 @@
-#CC=g++ -std=c++1y 
-CC=g++ -std=c++14 
+CC=g++ -std=c++17 
+#CC=g++ -std=c++11 
 
-FLAGS=-fmax-errors=3
+FLAGS=-Wall -Wno-c++11-extensions
 
 test: test_zip
 
 test_zip: zip unzip
-	seq 5 | xargs -Iz /usr/games/fortune > noise.txt
+	seq 5 | xargs -Iz fortune > noise.txt
 	./zip < noise.txt > noise.zip
 	./unzip < noise.zip > noise2.txt
 	diff noise.txt noise2.txt

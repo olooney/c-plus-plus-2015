@@ -1,6 +1,7 @@
 #pragma once
 #include <cxxabi.h>
 #include <string>
+#include <cstdlib>
 
 std::string demangle(const std::type_info& t) {
 	int status;
