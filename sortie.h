@@ -82,12 +82,12 @@ void mmm() {
     auto ultimateNums(nums);
     
     // storing all kinds of functions in a single vector
-    std::vector< std::function<bool(int)> > 
+    std::vector< std::function<bool(unsigned int)> > 
     predicates = {
         isPositive, // named lambda
         isOdd, // std::function
-        [=](int n) { return n > ultimateNums.size()/2; }, // value binding, remembers original length
-        [&](int n) { return n > ultimateNums.size(); }, // reference binding, detects current length
+        [=](unsigned int n) { return n > ultimateNums.size()/2; }, // value binding, remembers original length
+        [&](unsigned int n) { return n > ultimateNums.size(); }, // reference binding, detects current length
         isPrime // real function
     };
     

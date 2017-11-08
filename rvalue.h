@@ -22,10 +22,22 @@ public:
 
     Movable& operator=(const Movable& rhs) {
         std::cerr << "operator=(Movable&)\n";
+        if ( this != &rhs ) {
+            member = rhs.member;
+        }
+        return *this;
     }
 
     Movable& operator=(const Movable&& rhs) {
         std::cerr << "operator=(Movable&&)\n";
+        if ( this != &rhs ) {
+            member = rhs.member;
+        }
+        return *this;
+    }
+
+    bool operator==(const Movable& rhs) const {
+        return member == rhs.member;
     }
 };
 
@@ -37,6 +49,10 @@ void rvalue() {
     int&& y = 42;
     int&& x2 = std::move(x);
     int&& y2 = std::move(y);
+
+    if ( x2 != y2 ) {
+	std::cerr << "int move failed" << std::endl;
+    }
 
     Movable m;
     Movable m2 = m;

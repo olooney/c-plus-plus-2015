@@ -1,18 +1,21 @@
 CC=g++ -std=c++17 
-#CC=g++ -std=c++11 
+# note that g++ MUST refer to the gcc C++ compiler,
+# and not be an alias for clang as on Mac OS X>
 
-FLAGS=-Wall -Wno-c++11-extensions
+#FLAGS=-Wall -Wno-c++11-extensions
+FLAGS=-fmax-errors=3 -Wall
+FORTUNE=/usr/games/fortune
 
-test: test_zip
+test: test_all
 
 test_zip: zip unzip
-	seq 5 | xargs -Iz fortune > noise.txt
+	seq 5 | xargs -Iz $(FORTUNE) > noise.txt
 	./zip < noise.txt > noise.zip
 	./unzip < noise.zip > noise2.txt
 	diff noise.txt noise2.txt
 
 %: %.cpp
-	g++ $(FLAGS) $< -o $@
+	$(CC) $(FLAGS) $< -o $@
 
 zip: zip.cpp compress.h
 unzip: unzip.cpp compress.h

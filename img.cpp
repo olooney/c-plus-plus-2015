@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
     BitReader bit_reader(in);
     Huffman<unsigned char>::Node* state = nullptr;
     unsigned char symbol;
-    int y = 0;
+    unsigned int y = 0;
     while ( bit_reader ) {
         int bit = bit_reader.read_bit();
         //std::cout << bit;
