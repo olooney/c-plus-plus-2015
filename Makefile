@@ -44,11 +44,11 @@ msmart: smart.cpp
 mtype: greet.h m.cpp demangle.h sortie.h rvalue.h
 	$(CC) $(FLAGS) -o mtype m.cpp
 
-test_all: test_smart test_kv test_img test_zip
+test_all: test_smart test_kv test_img test_zip test_server
 # test_server is not included, since it blocks
 
 test_server: server
-	./server 8181
+	python3 test_server.py
 
 server: server.cpp
 	$(CC) $(FLAGS) -lboost_system -lboost_thread -o $@ $<
