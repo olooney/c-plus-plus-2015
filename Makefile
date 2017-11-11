@@ -56,3 +56,6 @@ server: server.cpp
 clean:
 	rm img kv msmart mtype noise.txt noise.zip noise2.txt
 
+init:
+	apt-get update && apt-get install -y fortune libboost-system-dev libboost-thread-dev
+
