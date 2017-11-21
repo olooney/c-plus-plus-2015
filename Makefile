@@ -25,7 +25,12 @@ test_img: img
 
 img: img.cpp compress.h
 	$(CC) $(FLAGS) -o img img.cpp lib/lodepng.cpp
-	
+
+maze: maze.cpp
+	$(CC) $(FLAGS) -o $@ $< lib/lodepng.cpp
+
+test_maze: maze
+	./maze test.png
 
 test_kv: kv
 	./kv set answer 42
@@ -44,7 +49,7 @@ msmart: smart.cpp
 mtype: greet.h m.cpp demangle.h sortie.h rvalue.h
 	$(CC) $(FLAGS) -o mtype m.cpp
 
-test_all: test_smart test_kv test_img test_zip test_server
+test_all: test_smart test_kv test_img test_zip test_server test_maze
 # test_server is not included, since it blocks
 
 test_server: server
@@ -57,5 +62,5 @@ clean:
 	rm img kv msmart mtype noise.txt noise.zip noise2.txt
 
 init:
-	apt-get update && apt-get install -y fortune libboost-system-dev libboost-thread-dev
+	apt-get update && apt-get install -y build-essential python3 fortune libboost-system-dev libboost-thread-dev
 
