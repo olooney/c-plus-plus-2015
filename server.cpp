@@ -46,14 +46,20 @@ private:
   void do_read()
   {
     auto self(shared_from_this());
-    socket.async_read_some(boost::asio::buffer(data_, max_length),
-        [this, self](boost::system::error_code ec, std::size_t length)
+
+	boost::asio::async_read_until(
+	    socket,
+		input_streambuf,
+		'\n',
+		[this, self](boost::system::error_code ec, std::size_t bytes_read)
         {
           if (!ec)
           {
+			std::istream iss(&input_streambuf);
+            std::string command;
+			std::getline(iss, command);
             std::string response;
-            std::string command = escape(std::string(data_, length));
-            std::cout << "read " << length << " " << command << std::endl;
+            std::cout << "read " << bytes_read << " bytes: " << escape(command) << std::endl;
             if ( starts_with(command, "GET") ) {
                 response = std::string("GOT ") + value + "\n";
             } else if ( starts_with(command, "SET ") ) {
@@ -68,7 +74,8 @@ private:
           } else {
             std::cout << "non-zero error code while reading from socket" << std::endl;
           }
-        });
+        }
+	);
   }
 
   void respond(std::string response)
@@ -90,7 +97,7 @@ private:
 
   tcp::socket socket;
   enum { max_length = 1024 };
-  char data_[max_length];
+  boost::asio::streambuf input_streambuf;
   std::string value;
 
 };
@@ -126,10 +133,8 @@ private:
   tcp::socket socket;
 };
 
-int main(int argc, char* argv[])
-{
-  try
-  {
+int main(int argc, char* argv[]) {
+  try {
     boost::asio::io_service io_service;
 
     tcp::endpoint server_endpoint(tcp::v4(), 8181);
