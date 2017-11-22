@@ -30,7 +30,7 @@ maze: maze.cpp
 	$(CC) $(FLAGS) -o $@ $< lib/lodepng.cpp
 
 test_maze: maze
-	./maze maze.png
+	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes ./maze maze.png
 
 test_kv: kv
 	./kv set answer 42
@@ -67,5 +67,5 @@ clean:
 	rm img kv msmart mtype noise.txt noise.zip noise2.txt
 
 init:
-	apt-get update && apt-get install -y build-essential python3 fortune libboost-system-dev libboost-thread-dev
+	apt-get update && apt-get install -y build-essential python3 fortune libboost-system-dev libboost-thread-dev gdb valgrind
 

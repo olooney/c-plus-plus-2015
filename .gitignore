@@ -6,6 +6,8 @@ img
 zip
 unzip
 server
+test_daemonize
+worker.log
 noise*
 *.huff
 

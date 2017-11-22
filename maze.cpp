@@ -23,23 +23,23 @@ public:
     }
 
     friend std::ostream& operator<<(std::ostream& out, const Point& p) {
-		out << "(" << p.x << "," << p.y << ")";
-		return out;
-	}
+        out << "(" << p.x << "," << p.y << ")";
+        return out;
+    }
 
-	std::vector<Point> neighborhood() const {
-	    std::vector<Point> ret = {
-		    Point{x, y+1},
-		    //Point{x+1, y+1},
-		    Point{x+1, y},
-		    //Point{x+1, y-1},
-		    Point{x, y-1},
-		    //Point{x-1, y-1},
-		    Point{x-1, y}
-		    //Point{x-1, y+1}
-		};
-		return ret;
-	}
+    std::vector<Point> neighborhood() const {
+        std::vector<Point> ret = {
+            Point{x, y+1},
+            //Point{x+1, y+1},
+            Point{x+1, y},
+            //Point{x+1, y-1},
+            Point{x, y-1},
+            //Point{x-1, y-1},
+            Point{x-1, y}
+            //Point{x-1, y+1}
+        };
+        return ret;
+    }
 };
 
 class Maze {
@@ -77,17 +77,17 @@ public:
                 double g = static_cast<double>(image[i+1])/255;
                 double b = static_cast<double>(image[i+2])/255;
                 double a = static_cast<double>(image[i+3])/255;
-				// std::cerr << Point{x,y} << " rgba(" << r << "," << g << "," << b << "," << a << ")" << std::endl;
+                // std::cerr << Point{x,y} << " rgba(" << r << "," << g << "," << b << "," << a << ")" << std::endl;
 
                 if ( r > 0.7 and (g + b) < 0.5 ) {
-					// red goal point
+                    // red goal point
                     goal = Point{x,y};
-					// std::cerr << "goal: " << goal << std::endl;
+                    // std::cerr << "goal: " << goal << std::endl;
                     traversable[x + y*size.x] = true;
                 } else if ( g > 0.7 and (r + b) < 0.5 ) {
-				    // green starting point
+                    // green starting point
                     start = Point{x,y};
-					// std::cerr << "start: " << start << std::endl;
+                    // std::cerr << "start: " << start << std::endl;
                     traversable[x + y*size.x] = true;
                 } else {
                     double greyscale = (0.30 * r +  0.59 * g + 0.11 * b) * a;
@@ -96,39 +96,39 @@ public:
             }
         }
 
-		// sanity check start and goal
-		if ( not inBounds(start) ) {
-		    throw std::runtime_error("no (green) start point found");
-		}
-		if ( not inBounds(goal) ) {
-		    throw std::runtime_error("no (red) goal point found");
-		}
+        // sanity check start and goal
+        if ( not inBounds(start) ) {
+            throw std::runtime_error("no (green) start point found");
+        }
+        if ( not inBounds(goal) ) {
+            throw std::runtime_error("no (red) goal point found");
+        }
     }
 
-	bool inBounds(const Point& p) const {
-		return p.x >= 0 and p.y >= 0 and p.x < size.x and p.y < size.y;
-	}
+    bool inBounds(const Point& p) const {
+        return p.x >= 0 and p.y >= 0 and p.x < size.x and p.y < size.y;
+    }
 
-	bool isTraversable(const Point& p) const {
-		return inBounds(p) and traversable[p.x + p.y*size.x] and not visited[p.x + p.y*size.x];
-	}
+    bool isTraversable(const Point& p) const {
+        return inBounds(p) and traversable[p.x + p.y*size.x] and not visited[p.x + p.y*size.x];
+    }
 
-	virtual double heuristic(const Point& p) const {
-	    return p.distanceTo(goal);
-	}
+    virtual double heuristic(const Point& p) const {
+        return p.distanceTo(goal);
+    }
 
-	bool isGoal(const Point& p ) const {
-		return p == goal;
-	}
+    bool isGoal(const Point& p ) const {
+        return p == goal;
+    }
 
-	std::vector<Point> neighborNodes(const Point& p) const {
-	    auto neighbors = p.neighborhood();
-		auto eraser = std::remove_if(neighbors.begin(), neighbors.end(), [this](const Point& p) {
-		    return not isTraversable(p);
-		});
-		neighbors.erase(eraser, neighbors.end());
-		return neighbors;
-	}
+    std::vector<Point> neighborNodes(const Point& p) const {
+        auto neighbors = p.neighborhood();
+        auto eraser = std::remove_if(neighbors.begin(), neighbors.end(), [this](const Point& p) {
+            return not isTraversable(p);
+        });
+        neighbors.erase(eraser, neighbors.end());
+        return neighbors;
+    }
 
 
     friend std::ostream& operator <<(std::ostream& out, const Maze& maze) {
@@ -136,65 +136,64 @@ public:
         for ( int y=0; y<maze.size.y; y++ ) {
             for ( int x=0; x<maze.size.x; x++ ) {
                 const Point p = Point{x,y};
-				if ( p == maze.start ) {
-					out << "@";
-				} else if ( p == maze.goal ) {
-					out << "X";
-			    } else if ( maze.breadcrumbs[x+y*maze.size.x] > 0 ) {
-				    out << maze.breadcrumbs[x+y*maze.size.x];
-				} else if ( maze.visited[x+y*maze.size.x] ) {
-				    out << ".";
-				} else {
-					out << (maze.traversable[x+y*maze.size.x] ? ' ' : '#');
-				}
-			}
-			out << std::endl;
-		}
+                if ( p == maze.start ) {
+                    out << "@";
+                } else if ( p == maze.goal ) {
+                    out << "X";
+                } else if ( maze.breadcrumbs[x+y*maze.size.x] > 0 ) {
+                    out << maze.breadcrumbs[x+y*maze.size.x];
+                } else if ( maze.visited[x+y*maze.size.x] ) {
+                    out << ".";
+                } else {
+                    out << (maze.traversable[x+y*maze.size.x] ? ' ' : '#');
+                }
+            }
+            out << std::endl;
+        }
         return out;
     }
 
-	// the worst solution
-	std::vector<Point> naive_depth_first() { return naive_depth_first(start); }
-	std::vector<Point> naive_depth_first(const Point&p) {
-		std::cerr << p << std::endl;
-		if ( isGoal(p) ) {
-			return { p };
-		} else {
-			// flag this node as non-traversable to prevent cycles
-		    visited[p.x +p.y*size.x] = true;
+    // the worst solution
+    std::vector<Point> naive_depth_first() { return naive_depth_first(start); }
+    std::vector<Point> naive_depth_first(const Point&p) {
+        if ( isGoal(p) ) {
+            return { p };
+        } else {
+            // flag this node as non-traversable to prevent cycles
+            visited[p.x +p.y*size.x] = true;
 
-			// the neighborhood of all possible moves from this node
-			auto neighbors = neighborNodes(p);
+            // the neighborhood of all possible moves from this node
+            auto neighbors = neighborNodes(p);
 
-			// investigate the most promising node first
-			std::sort(neighbors.begin(), neighbors.end(), [this](const Point& lhs, const Point& rhs) {
-			    return lhs.distanceTo(goal) < rhs.distanceTo(goal);
-			});
+            // investigate the most promising node first
+            std::sort(neighbors.begin(), neighbors.end(), [this](const Point& lhs, const Point& rhs) {
+                return lhs.distanceTo(goal) < rhs.distanceTo(goal);
+            });
 
-			// recurse depth-first
-			for ( auto p2 : neighbors ) {
-				if ( p != p2 ) {
-					auto path = naive_depth_first(p2);
-					if ( not path.empty() ) {
-						path.push_back(p);
-						return path;
-					}
-				}
-			}
-		} 
-		// return an empty vector as a sentinel indicating no solution was found.
-		return {};
-	}
+            // recurse depth-first
+            for ( auto p2 : neighbors ) {
+                if ( p != p2 ) {
+                    auto path = naive_depth_first(p2);
+                    if ( not path.empty() ) {
+                        path.push_back(p);
+                        return path;
+                    }
+                }
+            }
+        } 
+        // return an empty vector as a sentinel indicating no solution was found.
+        return {};
+    }
 
-	void paint_path(const std::vector<Point> path) {
-		std::fill(breadcrumbs.begin(), breadcrumbs.end(), 0);
-		int i = 1;
-	    for ( auto p : path ) {
-		    breadcrumbs[p.x + p.y*size.x] = i;
-			i++;
-			if ( i >= 10 ) i = 1;
-		}
-	}
+    void paint_path(const std::vector<Point> path) {
+        std::fill(breadcrumbs.begin(), breadcrumbs.end(), 0);
+        int i = 1;
+        for ( auto p : path ) {
+            breadcrumbs[p.x + p.y*size.x] = i;
+            i++;
+            if ( i >= 10 ) i = 1;
+        }
+    }
     
 private:
     std::vector<bool> traversable;
@@ -216,8 +215,8 @@ int main(int argc, char **argv) {
     auto maze = Maze(argv[1]);
 
     auto path = maze.naive_depth_first();
-	std::reverse(path.begin(), path.end());
-	maze.paint_path(path);
+    std::reverse(path.begin(), path.end());
+    maze.paint_path(path);
     std::cout << maze << std::endl;
 
     return 0;
