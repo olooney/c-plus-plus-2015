@@ -2,9 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <math.h>
-
-class Problem {
-};
+#include <algorithm>
 
 struct Point {
 public:
@@ -14,10 +12,13 @@ public:
     bool operator==(const Point& rhs) const {
         return x == rhs.x and y == rhs.y;
     }
+    bool operator!=(const Point& rhs) const {
+        return not (*this == rhs);
+    }
 
     double distanceTo(const Point& rhs) const {
-        double dx = static_cast<double>(rhs.x) - static_cast<double>(rhs.x);
-        double dy = static_cast<double>(rhs.y) - static_cast<double>(rhs.y);
+        double dx = static_cast<double>(x) - static_cast<double>(rhs.x);
+        double dy = static_cast<double>(y) - static_cast<double>(rhs.y);
         return sqrt(dx*dx + dy*dy);
     }
 
@@ -25,9 +26,23 @@ public:
 		out << "(" << p.x << "," << p.y << ")";
 		return out;
 	}
+
+	std::vector<Point> neighborhood() const {
+	    std::vector<Point> ret = {
+		    Point{x, y+1},
+		    //Point{x+1, y+1},
+		    Point{x+1, y},
+		    //Point{x+1, y-1},
+		    Point{x, y-1},
+		    //Point{x-1, y-1},
+		    Point{x-1, y}
+		    //Point{x-1, y+1}
+		};
+		return ret;
+	}
 };
 
-class Maze: public Problem {
+class Maze {
 public:
     
     Maze(const char* image_filename):
@@ -47,7 +62,11 @@ public:
         } 
             size.x = width;
             size.y = height;
+
             traversable.resize(width*height);
+            visited.resize(width*height, false);
+            breadcrumbs.resize(width*height, 0);
+
             // std::cerr << "loaded " << image_filename << " read " << size.x << "x" << size.y << " image with " << traversable.size() << " pixels" << std::endl;
 
         // convert to a boolean vector of traversable cells
@@ -86,13 +105,31 @@ public:
 		}
     }
 
-	bool inBounds(const Point& p) {
+	bool inBounds(const Point& p) const {
 		return p.x >= 0 and p.y >= 0 and p.x < size.x and p.y < size.y;
 	}
 
-	bool isTraversable(const Point& p) {
-		return inBounds(p) and traversable[p.x + p.y*size.x];
+	bool isTraversable(const Point& p) const {
+		return inBounds(p) and traversable[p.x + p.y*size.x] and not visited[p.x + p.y*size.x];
 	}
+
+	virtual double heuristic(const Point& p) const {
+	    return p.distanceTo(goal);
+	}
+
+	bool isGoal(const Point& p ) const {
+		return p == goal;
+	}
+
+	std::vector<Point> neighborNodes(const Point& p) const {
+	    auto neighbors = p.neighborhood();
+		auto eraser = std::remove_if(neighbors.begin(), neighbors.end(), [this](const Point& p) {
+		    return not isTraversable(p);
+		});
+		neighbors.erase(eraser, neighbors.end());
+		return neighbors;
+	}
+
 
     friend std::ostream& operator <<(std::ostream& out, const Maze& maze) {
         // print the maze
@@ -103,6 +140,10 @@ public:
 					out << "@";
 				} else if ( p == maze.goal ) {
 					out << "X";
+			    } else if ( maze.breadcrumbs[x+y*maze.size.x] > 0 ) {
+				    out << maze.breadcrumbs[x+y*maze.size.x];
+				} else if ( maze.visited[x+y*maze.size.x] ) {
+				    out << ".";
 				} else {
 					out << (maze.traversable[x+y*maze.size.x] ? ' ' : '#');
 				}
@@ -112,14 +153,59 @@ public:
         return out;
     }
 
+	// the worst solution
+	std::vector<Point> naive_depth_first() { return naive_depth_first(start); }
+	std::vector<Point> naive_depth_first(const Point&p) {
+		std::cerr << p << std::endl;
+		if ( isGoal(p) ) {
+			return { p };
+		} else {
+			// flag this node as non-traversable to prevent cycles
+		    visited[p.x +p.y*size.x] = true;
+
+			// the neighborhood of all possible moves from this node
+			auto neighbors = neighborNodes(p);
+
+			// investigate the most promising node first
+			std::sort(neighbors.begin(), neighbors.end(), [this](const Point& lhs, const Point& rhs) {
+			    return lhs.distanceTo(goal) < rhs.distanceTo(goal);
+			});
+
+			// recurse depth-first
+			for ( auto p2 : neighbors ) {
+				if ( p != p2 ) {
+					auto path = naive_depth_first(p2);
+					if ( not path.empty() ) {
+						path.push_back(p);
+						return path;
+					}
+				}
+			}
+		} 
+		// return an empty vector as a sentinel indicating no solution was found.
+		return {};
+	}
+
+	void paint_path(const std::vector<Point> path) {
+		std::fill(breadcrumbs.begin(), breadcrumbs.end(), 0);
+		int i = 1;
+	    for ( auto p : path ) {
+		    breadcrumbs[p.x + p.y*size.x] = i;
+			i++;
+			if ( i >= 10 ) i = 1;
+		}
+	}
     
 private:
     std::vector<bool> traversable;
+    std::vector<bool> visited;
+    std::vector<int> breadcrumbs;
     Point size;
-    Point start; 
+    Point start;
     Point goal;
     
 };
+
 
 int main(int argc, char **argv) {
     if ( argc != 2 ) {
@@ -128,8 +214,11 @@ int main(int argc, char **argv) {
     }
 
     auto maze = Maze(argv[1]);
-    std::cout << maze << std::endl;
 
+    auto path = maze.naive_depth_first();
+	std::reverse(path.begin(), path.end());
+	maze.paint_path(path);
+    std::cout << maze << std::endl;
 
     return 0;
 }
