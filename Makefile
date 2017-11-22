@@ -30,7 +30,7 @@ maze: maze.cpp
 	$(CC) $(FLAGS) -o $@ $< lib/lodepng.cpp
 
 test_maze: maze
-	./maze test.png
+	./maze maze.png
 
 test_kv: kv
 	./kv set answer 42
