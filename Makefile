@@ -1,4 +1,4 @@
-CC=g++ -std=c++17 
+CC=g++ -std=c++17
 # note that g++ MUST refer to the gcc C++ compiler,
 # and not be an alias for clang as on Mac OS X>
 
@@ -47,9 +47,14 @@ msmart: smart.cpp
 	$(CC) $(FLAGS) -o msmart smart.cpp
 
 mtype: greet.h m.cpp demangle.h sortie.h rvalue.h
-	$(CC) $(FLAGS) -o mtype m.cpp
+	$(CC) $(FLAGS) -o $@ m.cpp
 
-test_all: test_smart test_kv test_img test_zip test_server test_maze
+test_daemonize: test_daemonize.cpp daemonize.h
+	@rm worker.log || true
+	$(CC) $(FLAGS) -o $@ test_daemonize.cpp
+	./test_daemonize
+
+test_all: test_smart test_kv test_img test_zip test_server test_maze test_daemonize
 # test_server is not included, since it blocks
 
 test_server: server
