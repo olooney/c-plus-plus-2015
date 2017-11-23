@@ -3,7 +3,7 @@ CC=g++ -std=c++17
 # and not be an alias for clang as on Mac OS X>
 
 #FLAGS=-Wall -Wno-c++11-extensions
-FLAGS=-fmax-errors=3 -Wall -DBOOST_SYSTEM_NO_DEPRECATED -DBOOST_ERROR_CODE_HEADER_ONLY
+FLAGS=-fmax-errors=3 -Wall -DBOOST_SYSTEM_NO_DEPRECATED -DBOOST_ERROR_CODE_HEADER_ONLY -g
 FORTUNE=/usr/games/fortune
 
 test: test_all

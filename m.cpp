@@ -1,12 +1,13 @@
-#include<cstring>
-#include<string>
-#include<vector>
-#include<utility>
+#include <cstring>
+#include <string>
+#include <vector>
+#include <utility>
 
 #include "demangle.h"
 #include "greet.h"
 #include "sortie.h"
 #include "rvalue.h"
+#include "constexpr.h"
 
 template<typename container_t, typename index_t>
 auto value_at(const container_t container, index_t index)
@@ -15,6 +16,7 @@ auto value_at(const container_t container, index_t index)
 	return container[index];
 }
 
+static const long f10 = constfactorial(10);
 
 int main(int argc, char** argv) {
 	// const literal
@@ -52,6 +54,12 @@ int main(int argc, char** argv) {
     mmm();
 
     rvalue();
+
+    std::cout << "constexpr 10! = " << f10 << std::endl;
+    const long f11 = constfactorial(11);
+    std::cout << "constexpr 11! = " << f11 << std::endl;
+
+    std::cout << "(runtime?) 12! = " << constfactorial(12) << std::endl;
 
 	return 0;
 }
