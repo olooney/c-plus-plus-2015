@@ -1,4 +1,4 @@
-#include "lib/lodepng.h"
+#include "lib/lodepng/lodepng.h"
 #include <iostream>
 #include <fstream>
 #include <math.h>

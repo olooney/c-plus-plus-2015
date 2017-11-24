@@ -24,10 +24,10 @@ test_img: img
 	./img test.png
 
 img: img.cpp compress.h
-	$(CC) $(FLAGS) -o img img.cpp lib/lodepng.cpp
+	$(CC) $(FLAGS) -o img img.cpp lib/lodepng/lodepng.cpp
 
 maze: maze.cpp
-	$(CC) $(FLAGS) -o $@ $< lib/lodepng.cpp
+	$(CC) $(FLAGS) -o $@ $< lib/lodepng/lodepng.cpp
 
 test_maze: maze
 	valgrind --tool=memcheck --leak-check=yes --show-reachable=yes ./maze maze.png

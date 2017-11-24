@@ -1,4 +1,6 @@
-#include "lib/lodepng.h"
+#include "lib/lodepng/lodepng.h"
+#include "lib/gif-h/gif.h"
+
 #include <iostream>
 #include <vector>
 #include <math.h>
@@ -194,6 +196,59 @@ public:
             if ( i >= 10 ) i = 1;
         }
     }
+
+    void write_gif(const std::string& filename) {
+        const uint32_t delay = 8;
+        bool ok = true;
+        GifWriter writer;
+        ok = GifBegin(&writer, filename.c_str(), size.x, size.y, delay);
+        if ( not ok ) throw std::runtime_error("unable to open gif file for writing");
+            
+        uint8_t* frame_data = new uint8_t[size.x * size.y * 4];
+
+        for ( int y=0; y<size.y; y++ ) {
+            for ( int x=0; x<size.x; x++ ) {
+                const Point p = Point{x,y};
+                frame_data[(x + y*size.x)*4 + 3]=0;
+
+                if ( p == start ) {
+                    frame_data[(x + y*size.x)*4 + 0]=255;
+                    frame_data[(x + y*size.x)*4 + 1]=0;
+                    frame_data[(x + y*size.x)*4 + 2]=0;
+                } else if ( p == goal ) {
+                    frame_data[(x + y*size.x)*4 + 0]=255;
+                    frame_data[(x + y*size.x)*4 + 1]=0;
+                    frame_data[(x + y*size.x)*4 + 2]=0;
+                } else if ( breadcrumbs[x+y*size.x] > 0 ) {
+                    frame_data[(x + y*size.x)*4 + 0]=255;
+                    frame_data[(x + y*size.x)*4 + 1]=0;
+                    frame_data[(x + y*size.x)*4 + 2]=0;
+                /*
+                } else if ( visited[x+y*size.x] ) {
+                    frame_data[(x + y*size.x)*4 + 0]=200;
+                    frame_data[(x + y*size.x)*4 + 1]=200;
+                    frame_data[(x + y*size.x)*4 + 2]=255;
+                */
+                } else if (traversable[x+y*size.x] ) {
+                    frame_data[(x + y*size.x)*4 + 0]=255;
+                    frame_data[(x + y*size.x)*4 + 1]=255;
+                    frame_data[(x + y*size.x)*4 + 2]=255;
+                } else {
+                    frame_data[(x + y*size.x)*4 + 0]=0;
+                    frame_data[(x + y*size.x)*4 + 1]=0;
+                    frame_data[(x + y*size.x)*4 + 2]=0;
+                }
+            }
+        }
+
+        ok = GifWriteFrame(&writer, frame_data, size.x, size.y, delay); 
+        if ( not ok ) throw std::runtime_error("unable to write frame to gif file");
+
+        delete[] frame_data;
+
+        ok = GifEnd(&writer);
+        if ( not ok ) throw std::runtime_error("unable to finalize writing to gif file.");
+    }
     
 private:
     std::vector<bool> traversable;
@@ -217,7 +272,8 @@ int main(int argc, char **argv) {
     auto path = maze.naive_depth_first();
     std::reverse(path.begin(), path.end());
     maze.paint_path(path);
-    std::cout << maze << std::endl;
+    // std::cout << maze << std::endl;
+    maze.write_gif("maze_solution.gif");
 
     return 0;
 }
