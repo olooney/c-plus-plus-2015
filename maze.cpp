@@ -3,8 +3,12 @@
 
 #include <iostream>
 #include <vector>
-#include <math.h>
+#include <map>
+#include <math.h> // need sqrt
 #include <algorithm>
+#include <functional>
+#include <cfloat> // need the DBL_MAX constant
+#include <utility> // need std::make_pair
 
 struct Point {
 public:
@@ -32,17 +36,28 @@ public:
     std::vector<Point> neighborhood() const {
         std::vector<Point> ret = {
             Point{x, y+1},
-            //Point{x+1, y+1},
             Point{x+1, y},
-            //Point{x+1, y-1},
             Point{x, y-1},
-            //Point{x-1, y-1},
             Point{x-1, y}
+
+            //Point{x+1, y+1},
+            //Point{x+1, y-1},
+            //Point{x-1, y-1},
             //Point{x-1, y+1}
         };
         return ret;
     }
+
 };
+
+// need a strict ordering to use as an std::map key.
+bool operator<(const Point& lhs, const Point& rhs ) {
+    if ( lhs.x == rhs.x ) {
+        return ( lhs.y < rhs.y );
+    } else {
+        return ( lhs.x < rhs.x );
+    }
+}
 
 class Maze {
 public:
@@ -185,6 +200,106 @@ public:
         } 
         // return an empty vector as a sentinel indicating no solution was found.
         return {};
+    }
+
+    // best solution
+    std::vector<Point> a_star() {
+        std::vector< std::pair<double, Point> > frontier;
+        std::map<Point, double> g_map;
+        std::map<Point, Point> prev_map;
+
+        // heuristic - estimated distance to goal
+        auto h = [&](Point p) { return p.distanceTo(goal); };
+
+        // shortest known distance from start to p (discovered so far)
+        auto g = [&](Point p) -> double {
+            if ( g_map.find(p) != g_map.end() ) {
+                return g_map[p];
+            } else {
+                return DBL_MAX;
+            }
+        };
+
+        // counter-intuitively, we need to use operator>() (greater than) to
+        // sort our heap so that we can pop the least element.
+        auto frontier_priority = [](const std::pair<double, Point>& lhs, const std::pair<double, Point>& rhs) {
+            return lhs.first > rhs.first;
+        };
+
+        // push a point onto the frontier.
+        auto push = [&](Point p) {
+            double f = g(p) + h(p);
+            frontier.emplace_back( std::make_pair(f, p) );
+            std::push_heap(frontier.begin(), frontier.end(), frontier_priority);
+        };
+
+        // get the next, best point off the frontier.
+        auto pop = [&]() -> Point {
+            std::pop_heap(frontier.begin(), frontier.end(), frontier_priority);
+            std::pair<double, Point> pair = frontier.back();
+            frontier.pop_back();
+            return pair.second;
+        };
+
+        // sometimes we need to update a frontier node when a better path is found.
+        auto update_f = [&](Point p) {
+            for ( auto pair : frontier ) {
+                if  ( pair.second == p ) {
+                    double f = g(p) + h(p);
+                    pair.first = f;
+                    std::make_heap(frontier.begin(), frontier.end(), frontier_priority);
+                    return;
+                }
+            }
+            // if the point has a g-score but is not on the frontier, it must
+            // have already been fully explored. We don't need to search it again.
+        };
+
+        // recurses backwards through the prev_map to reconstruct the optimal
+        // path from start to goal.
+        std::function<std::vector<Point> (Point)> unwind_path = [&](Point p) -> std::vector<Point> {
+            if ( p == start ) {
+                return {start};
+            } else {
+                auto prev = prev_map[p];
+                std::vector<Point> path = unwind_path(prev);
+                path.push_back(p);
+                return path;
+            }
+        };
+
+        // setup
+        push(start);
+        g_map[start] = 0;
+
+        // a_star algorithm 
+        while ( not frontier.empty() ) {
+            // take the most promising point from the frontier
+            auto point = pop();
+
+            // search all reachable neighbors
+            auto neighbors = neighborNodes(point);
+            for ( neighbor : neighbors ) {
+                if ( point == goal ) {
+                    // TODO: what if there's a shorter path later on?
+                    return unwind_path(point);
+                }
+                // total travel cost from start to new neighbor
+                double new_g = g(point) + point.distanceTo(neighbor);
+
+                // if we've found a new/better path...
+                if ( new_g < g(neighbor) ) {
+                    // add or replace the neighbor on the frontier.
+                    g_map[neighbor] = new_g;
+                    prev_map[neighbor] = point;
+                    update_f(neighbor);
+                }
+            }
+        }
+
+        // empty vector indicates no path found.
+        return {};
+
     }
 
     void paint_path(const std::vector<Point> path) {
