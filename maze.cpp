@@ -216,7 +216,7 @@ public:
             if ( g_map.find(p) != g_map.end() ) {
                 return g_map[p];
             } else {
-                return DBL_MAX;
+                return INFINITY;
             }
         };
 
@@ -276,30 +276,45 @@ public:
         while ( not frontier.empty() ) {
             // take the most promising point from the frontier
             auto point = pop();
+            // std::cerr << "from " << point << ":" << std::endl;
 
             // search all reachable neighbors
             auto neighbors = neighborNodes(point);
             for ( neighbor : neighbors ) {
+                // std::cerr << "\tto:" << neighbor; 
+
                 if ( point == goal ) {
                     // TODO: what if there's a shorter path later on?
+                    // std::cerr << "\nfound optimal solution!" << std::endl;
                     return unwind_path(point);
                 }
                 // total travel cost from start to new neighbor
                 double new_g = g(point) + point.distanceTo(neighbor);
+                double old_g = g(neighbor);
+                // std::cerr << " new_g=" << new_g << " h=" << h(neighbor) << " f=" << new_g + h(neighbor) << " old_g=" << old_g;
 
                 // if we've found a new/better path...
                 if ( new_g < g(neighbor) ) {
-                    // add or replace the neighbor on the frontier.
+                    // in both cases we update g and prev.
                     g_map[neighbor] = new_g;
                     prev_map[neighbor] = point;
-                    update_f(neighbor);
+
+                    if ( old_g >= INFINITY ) { 
+                        // never visited
+                        push(neighbor);
+                        // std::cerr << " added to frontier!";
+                    } else { 
+                        // already visited but this is a shorter path
+                        update_f(neighbor);
+                        // std::cerr << " updated!";
+                   }
                 }
+                // std::cerr << std::endl;
             }
         }
 
         // empty vector indicates no path found.
         return {};
-
     }
 
     void paint_path(const std::vector<Point> path) {
@@ -384,11 +399,13 @@ int main(int argc, char **argv) {
 
     auto maze = Maze(argv[1]);
 
-    auto path = maze.naive_depth_first();
-    std::reverse(path.begin(), path.end());
+    auto path = maze.a_star();
+    //std::reverse(path.begin(), path.end());
     maze.paint_path(path);
-    // std::cout << maze << std::endl;
-    maze.write_gif("maze_solution.gif");
+    std::cout << maze << std::endl;
+    if ( not path.empty() ) {
+        maze.write_gif("maze_solution.gif");
+    }
 
     return 0;
 }
