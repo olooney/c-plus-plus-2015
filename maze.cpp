@@ -400,11 +400,12 @@ int main(int argc, char **argv) {
     auto maze = Maze(argv[1]);
 
     auto path = maze.a_star();
+    std::cout << path.size() << std::endl;
     //std::reverse(path.begin(), path.end());
     maze.paint_path(path);
-    std::cout << maze << std::endl;
+    // std::cout << maze << std::endl;
     if ( not path.empty() ) {
-        maze.write_gif("maze_solution.gif");
+        maze.write_gif(std::string(argv[1]) + ".solution.gif");
     }
 
     return 0;
