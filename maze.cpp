@@ -4,7 +4,8 @@
 #include <iostream>
 #include <vector>
 #include <map>
-#include <math.h> // need sqrt
+#include <set>
+#include <cmath> // need sqrt
 #include <algorithm>
 #include <functional>
 #include <cfloat> // need the DBL_MAX constant
@@ -205,6 +206,7 @@ public:
     // best solution
     std::vector<Point> a_star() {
         std::vector< std::pair<double, Point> > frontier;
+        std::set<Point> closed_set;
         std::map<Point, double> g_map;
         std::map<Point, Point> prev_map;
 
@@ -238,6 +240,7 @@ public:
             std::pop_heap(frontier.begin(), frontier.end(), frontier_priority);
             std::pair<double, Point> pair = frontier.back();
             frontier.pop_back();
+            closed_set.insert(pair.second);
             return pair.second;
         };
 
@@ -251,8 +254,6 @@ public:
                     return;
                 }
             }
-            // if the point has a g-score but is not on the frontier, it must
-            // have already been fully explored. We don't need to search it again.
         };
 
         // recurses backwards through the prev_map to reconstruct the optimal
@@ -278,38 +279,42 @@ public:
             auto point = pop();
             // std::cerr << "from " << point << ":" << std::endl;
 
+            // we're done! Not only that, but because point was a the top of the frontier heap,
+            // we've proven that the path via this point is the *optimal* path.
+            if ( point == goal ) {
+                return unwind_path(point);
+            }
+
             // search all reachable neighbors
             auto neighbors = neighborNodes(point);
             for ( neighbor : neighbors ) {
-                // std::cerr << "\tto:" << neighbor; 
+                // never search a node twice
+                if ( closed_set.find(neighbor) == closed_set.end() ) {
+                    // std::cerr << "\tto:" << neighbor; 
 
-                if ( point == goal ) {
-                    // TODO: what if there's a shorter path later on?
-                    // std::cerr << "\nfound optimal solution!" << std::endl;
-                    return unwind_path(point);
+                    // total travel cost from start to new neighbor
+                    double new_g = g(point) + point.distanceTo(neighbor);
+                    double old_g = g(neighbor);
+                    // std::cerr << " new_g=" << new_g << " h=" << h(neighbor) << " f=" << new_g + h(neighbor) << " old_g=" << old_g;
+
+                    // if we've found a new/better path...
+                    if ( new_g < old_g ) {
+                        // in both cases we update g and prev.
+                        g_map[neighbor] = new_g;
+                        prev_map[neighbor] = point;
+
+                        if ( old_g >= INFINITY ) { 
+                            // never visited
+                            push(neighbor);
+                            // std::cerr << " added to frontier!";
+                        } else { 
+                            // already visited but this is a shorter path
+                            update_f(neighbor);
+                            // std::cerr << " updated!";
+                       }
+                    }
+                    // std::cerr << std::endl;
                 }
-                // total travel cost from start to new neighbor
-                double new_g = g(point) + point.distanceTo(neighbor);
-                double old_g = g(neighbor);
-                // std::cerr << " new_g=" << new_g << " h=" << h(neighbor) << " f=" << new_g + h(neighbor) << " old_g=" << old_g;
-
-                // if we've found a new/better path...
-                if ( new_g < g(neighbor) ) {
-                    // in both cases we update g and prev.
-                    g_map[neighbor] = new_g;
-                    prev_map[neighbor] = point;
-
-                    if ( old_g >= INFINITY ) { 
-                        // never visited
-                        push(neighbor);
-                        // std::cerr << " added to frontier!";
-                    } else { 
-                        // already visited but this is a shorter path
-                        update_f(neighbor);
-                        // std::cerr << " updated!";
-                   }
-                }
-                // std::cerr << std::endl;
             }
         }
 
