@@ -259,19 +259,17 @@ public:
         // recurses backwards through the prev_map to reconstruct the optimal
         // path from start to goal.
         std::function<std::vector<Point> (Point)> unwind_path = [&](Point p) -> std::vector<Point> {
-            if ( p == start ) {
-                return {start};
-            } else {
-                auto prev = prev_map[p];
-                std::vector<Point> path = unwind_path(prev);
+            std::vector<Point> path;
+            do {
                 path.push_back(p);
-                return path;
-            }
+                p = prev_map[p];
+            } while ( p != start );
+            return path;
         };
 
         // setup
-        push(start);
         g_map[start] = 0;
+        push(start);
 
         // a_star algorithm 
         while ( not frontier.empty() ) {
